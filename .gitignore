@@ -1,5 +1,22 @@
-# Object file
-*.o
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.venv/
+env/
 
-# Ada Library Information
-*.ali
+# Environment
+.env
+
+# Sessions
+*.session
+*.session-journal
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
