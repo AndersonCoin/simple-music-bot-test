@@ -1,12 +1,13 @@
 # bot.py
-"""
-Simple test bot - Just to verify everything works!
-"""
+"""Simple test bot with health check"""
 from pyrogram import Client, filters
 from pyrogram.types import Message
 import os
 from dotenv import load_dotenv
 import logging
+from threading import Thread  # ✅ إضافة
+from aiohttp import web  # ✅ إضافة
+import asyncio  # ✅ إضافة
 
 # Load environment variables
 load_dotenv()
@@ -23,9 +24,8 @@ API_ID = int(os.getenv("API_ID", "0"))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
-# Validate config
 if not API_ID or not API_HASH or not BOT_TOKEN:
-    logger.error("❌ Missing configuration! Check your .env file")
+    logger.error("❌ Missing configuration!")
     exit(1)
 
 # Create bot
@@ -39,6 +39,40 @@ app = Client(
 logger.info("=" * 50)
 logger.info("Simple Test Bot")
 logger.info("=" * 50)
+
+
+# ✅ Health check server (NEW!)
+async def health_handler(request):
+    """Health endpoint for Render."""
+    return web.Response(text="Bot is running! 🤖✅", status=200)
+
+def start_health_server():
+    """Start health check server in background."""
+    async def run_server():
+        health_app = web.Application()
+        health_app.router.add_get('/', health_handler)
+        health_app.router.add_get('/health', health_handler)
+        
+        port = int(os.getenv('PORT', '8080'))
+        runner = web.AppRunner(health_app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', port)
+        await site.start()
+        
+        logger.info(f"✓ Health server started on port {port}")
+        
+        # Keep server running
+        while True:
+            await asyncio.sleep(3600)
+    
+    # Run in separate thread
+    def run_in_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_server())
+    
+    thread = Thread(target=run_in_thread, daemon=True)
+    thread.start()
 
 
 # Handler 1: Start command
@@ -117,6 +151,9 @@ if __name__ == "__main__":
     logger.info("🚀 Starting bot...")
     logger.info(f"📱 API_ID: {API_ID}")
     logger.info(f"🔑 BOT_TOKEN: {BOT_TOKEN[:20]}...")
+    
+    # ✅ Start health server (NEW!)
+    start_health_server()
     
     try:
         app.run()
