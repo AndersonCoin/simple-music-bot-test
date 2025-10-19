@@ -1,22 +1,4 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-.Python
-venv/
-.venv/
-env/
-
-# Environment
 .env
-
-# Sessions
+__pycache__/
+*.pyc
 *.session
-*.session-journal
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
